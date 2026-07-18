@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileCode, History, BarChart2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +14,8 @@ const navigation = [
 ];
 
 export function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card/50">
       <div className="flex h-16 shrink-0 items-center px-6">
@@ -19,7 +24,7 @@ export function Sidebar() {
       <div className="flex flex-1 flex-col overflow-y-auto">
         <nav className="flex-1 space-y-1 px-4 py-4">
           {navigation.map((item) => {
-            const isActive = false; // Add active state logic later
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}

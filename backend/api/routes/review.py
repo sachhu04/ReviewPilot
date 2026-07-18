@@ -4,12 +4,15 @@ import hashlib
 
 from core.database import get_db
 from core.security import get_current_user
+from core.security import get_current_user
 from models.user import User
 from models.file import UploadedFile
 from models.review import Review
+from models.issue import Issue
 from services.parser import DiffParser
 from services.pipeline import ReviewPipeline
 from fastapi import BackgroundTasks
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -103,4 +106,53 @@ async def upload_code(
         "review_id": review.id,
         "hash": content_hash,
         "language": language
+    }
+
+@router.get("/history")
+def get_review_history(
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(get_current_user)
+):
+    """Fetch recent reviews for the user."""
+    # Hardcoded user_id=1 for testing
+    reviews = db.query(Review).filter(Review.user_id == 1).order_by(Review.created_at.desc()).limit(20).all()
+    
+    result = []
+    for r in reviews:
+        # Get filename if available
+        file_obj = db.query(UploadedFile).filter(UploadedFile.review_id == r.id).first()
+        filename = file_obj.filename if file_obj else "Unknown"
+        
+        result.append({
+            "id": r.id,
+            "filename": filename,
+            "status": r.status,
+            "score": r.overall_score,
+            "created_at": r.created_at,
+            "language": r.language
+        })
+    return result
+
+@router.get("/statistics")
+def get_statistics(
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(get_current_user)
+):
+    """Fetch aggregated statistics for the user."""
+    # Hardcoded user_id=1 for testing
+    total_reviews = db.query(Review).filter(Review.user_id == 1).count()
+    
+    avg_score = db.query(func.avg(Review.overall_score)).filter(Review.user_id == 1).scalar()
+    avg_score = round(avg_score, 1) if avg_score else 0.0
+    
+    critical_issues = db.query(Issue).join(Review).filter(Review.user_id == 1, Issue.severity == "Critical").count()
+    
+    ready_count = db.query(Review).filter(Review.user_id == 1, Review.merge_ready == True).count()
+    merge_ready_pct = round((ready_count / total_reviews * 100)) if total_reviews > 0 else 0
+    
+    return {
+        "total_reviews": total_reviews,
+        "average_score": avg_score,
+        "critical_issues": critical_issues,
+        "merge_ready_percentage": merge_ready_pct
     }
