@@ -36,3 +36,30 @@ class DiffParser:
     def cleanup_workspace(temp_dir: str):
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
+            
+    @staticmethod
+    def detect_language(files_dict: dict) -> str:
+        """
+        Detects language based on file extensions in the diff.
+        """
+        ext_count = {}
+        for filename in files_dict.keys():
+            ext = os.path.splitext(filename)[1].lower()
+            ext_count[ext] = ext_count.get(ext, 0) + 1
+            
+        if not ext_count:
+            return "unknown"
+            
+        primary_ext = max(ext_count, key=ext_count.get)
+        ext_to_lang = {
+            ".py": "python",
+            ".js": "javascript",
+            ".ts": "typescript",
+            ".tsx": "typescript",
+            ".go": "go",
+            ".java": "java",
+            ".cpp": "cpp",
+            ".cc": "cpp",
+            ".cs": "c#"
+        }
+        return ext_to_lang.get(primary_ext, "unknown")
