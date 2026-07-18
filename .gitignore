@@ -1,0 +1,5 @@
+# Exclude AI agent configs
+CLAUDE.md
+AGENTS.md
+claude.md
+agents.md
