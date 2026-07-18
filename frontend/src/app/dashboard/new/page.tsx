@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UploadCloud, Code, Github, ArrowRight, CheckCircle2 } from "lucide-react";
+import { UploadCloud, Code, GitPullRequest, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { useRouter } from "next/navigation";
 
 const languages = [
   "C++", "Python", "Java", "JavaScript", "TypeScript", "Go", "Rust", "C#"
@@ -25,27 +26,61 @@ const pipelineSteps = [
 ];
 
 export default function NewReviewPage() {
+  const router = useRouter();
   const [language, setLanguage] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("upload");
+  const [file, setFile] = useState<File | null>(null);
+  const [pastedCode, setPastedCode] = useState<string>("");
+  const [githubUrl, setGithubUrl] = useState<string>("");
   const [isReviewing, setIsReviewing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const handleReview = () => {
+  const handleReview = async () => {
     setIsReviewing(true);
     setCurrentStep(0);
-    
-    // Simulate pipeline progress
-    let step = 0;
-    const interval = setInterval(() => {
-      step++;
-      setCurrentStep(step);
-      if (step >= pipelineSteps.length) {
-        clearInterval(interval);
+
+    try {
+      const formData = new FormData();
+      formData.append("language", language);
+      
+      if (activeTab === "upload" && file) {
+        formData.append("file", file);
+      } else if (activeTab === "paste" && pastedCode) {
+        formData.append("pasted_code", pastedCode);
+      } else if (activeTab === "github" && githubUrl) {
+        formData.append("github_url", githubUrl);
+      }
+
+      // Quick simulated UI progress while fetching
+      const interval = setInterval(() => {
+        setCurrentStep((prev) => (prev < pipelineSteps.length - 1 ? prev + 1 : prev));
+      }, 1000);
+
+      const res = await fetch("http://localhost:8000/api/v1/review/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Authorization": "Bearer stub"
+        }
+      });
+      
+      const data = await res.json();
+      clearInterval(interval);
+      setCurrentStep(pipelineSteps.length);
+
+      if (data.status === "success") {
         setTimeout(() => {
           setIsReviewing(false);
-          // router.push("/dashboard/review/123")
+          router.push(`/dashboard`);
         }, 1000);
+      } else {
+        alert("Upload failed: " + data.detail);
+        setIsReviewing(false);
       }
-    }, 1500);
+    } catch (e) {
+      alert("Error connecting to backend");
+      setIsReviewing(false);
+    }
   };
 
   return (
@@ -66,7 +101,7 @@ export default function NewReviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Tabs defaultValue="upload" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="upload" className="flex items-center gap-2">
                   <UploadCloud className="w-4 h-4" /> Upload File
@@ -75,7 +110,7 @@ export default function NewReviewPage() {
                   <Code className="w-4 h-4" /> Paste Code
                 </TabsTrigger>
                 <TabsTrigger value="github" className="flex items-center gap-2">
-                  <Github className="w-4 h-4" /> GitHub PR
+                  <GitPullRequest className="w-4 h-4" /> GitHub PR
                 </TabsTrigger>
               </TabsList>
               
@@ -86,9 +121,15 @@ export default function NewReviewPage() {
                       <div className="flex flex-col items-center justify-center pt-5 pb-6 text-muted-foreground">
                         <UploadCloud className="w-10 h-10 mb-3" />
                         <p className="mb-2 text-sm font-semibold">Click to upload or drag and drop</p>
-                        <p className="text-xs">.diff or .patch files</p>
+                        <p className="text-xs">Source code or diff files</p>
+                        {file && <p className="mt-4 font-semibold text-primary">{file.name}</p>}
                       </div>
-                      <input id="dropzone-file" type="file" className="hidden" accept=".diff,.patch" />
+                      <input 
+                        id="dropzone-file" 
+                        type="file" 
+                        className="hidden" 
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      />
                     </label>
                   </div>
                 </TabsContent>
@@ -100,6 +141,8 @@ export default function NewReviewPage() {
                       id="code-input"
                       placeholder="Paste your code or git diff here..." 
                       className="min-h-[250px] font-mono text-sm bg-muted/20"
+                      value={pastedCode}
+                      onChange={(e) => setPastedCode(e.target.value)}
                     />
                   </div>
                 </TabsContent>
@@ -111,6 +154,8 @@ export default function NewReviewPage() {
                       id="github-url"
                       placeholder="https://github.com/owner/repo/pull/123" 
                       className="bg-muted/20"
+                      value={githubUrl}
+                      onChange={(e) => setGithubUrl(e.target.value)}
                     />
                   </div>
                 </TabsContent>
@@ -119,7 +164,7 @@ export default function NewReviewPage() {
 
             <div className="space-y-2 pt-4 border-t">
               <Label>Programming Language</Label>
-              <Select value={language} onValueChange={setLanguage}>
+              <Select value={language} onValueChange={(val) => setLanguage(val || "")}>
                 <SelectTrigger className="w-full md:w-[300px]">
                   <SelectValue placeholder="Select language for static analysis" />
                 </SelectTrigger>

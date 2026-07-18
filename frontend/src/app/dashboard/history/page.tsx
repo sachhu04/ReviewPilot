@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight, FileCode } from "lucide-react";
 import Link from "next/link";
 
@@ -107,11 +107,18 @@ export default function HistoryPage() {
                     {new Date(item.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" asChild disabled={item.status !== "Completed"}>
-                      <Link href={`/dashboard/review/${item.id}`}>
+                    {item.status === "Completed" ? (
+                      <Link 
+                        href={`/dashboard/review/${item.id}`}
+                        className={buttonVariants({ variant: "ghost", size: "sm" })}
+                      >
                         View <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
-                    </Button>
+                    ) : (
+                      <span className={buttonVariants({ variant: "ghost", size: "sm" }) + " opacity-50 cursor-not-allowed pointer-events-none"}>
+                        View <ArrowRight className="ml-2 h-4 w-4" />
+                      </span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

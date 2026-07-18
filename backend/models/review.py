@@ -13,6 +13,7 @@ class Review(Base):
     confidence = Column(Integer, nullable=True)
     summary = Column(String, nullable=True)
     language = Column(String, nullable=True)
+    status = Column(String, default="Processing")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", backref="reviews")

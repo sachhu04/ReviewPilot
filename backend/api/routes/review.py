@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 import hashlib
 
 from core.database import get_db
-from core.security import get_current_user
-from core.security import get_current_user
+from api.deps import get_current_user
 from models.user import User
 from models.file import UploadedFile
 from models.review import Review
@@ -24,7 +23,7 @@ async def upload_code(
     github_url: str = Form(None),
     language: str = Form(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    # current_user: User = Depends(get_current_user)
 ):
     """
     Endpoint for uploading code to be reviewed.

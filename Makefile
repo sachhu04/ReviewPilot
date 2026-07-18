@@ -29,7 +29,7 @@ db-shell:
 	docker exec -it reviewpilot-db psql -U reviewpilot -d reviewpilot_db
 
 migrate:
-	docker exec -it reviewpilot-backend alembic upgrade head
+	docker exec -t reviewpilot-backend alembic upgrade head
 
 status:
 	docker compose ps
