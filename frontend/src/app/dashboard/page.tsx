@@ -12,7 +12,7 @@ export default function DashboardOverview() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="transition-all hover:-translate-y-1 hover:shadow-md border-border bg-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
             <FileCode className="h-4 w-4 text-muted-foreground" />
@@ -22,7 +22,7 @@ export default function DashboardOverview() {
             <p className="text-xs text-muted-foreground">+20.1% from last month</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all hover:-translate-y-1 hover:shadow-md border-border bg-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Score</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
@@ -32,7 +32,7 @@ export default function DashboardOverview() {
             <p className="text-xs text-muted-foreground">+0.2 from last month</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all hover:-translate-y-1 hover:shadow-md border-border bg-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Critical Issues</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -42,7 +42,7 @@ export default function DashboardOverview() {
             <p className="text-xs text-muted-foreground">-4 from last week</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition-all hover:-translate-y-1 hover:shadow-md border-border bg-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Merge Ready %</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
